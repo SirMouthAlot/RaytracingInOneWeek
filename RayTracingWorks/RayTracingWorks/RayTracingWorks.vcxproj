@@ -154,11 +154,13 @@
     <ClCompile Include="RayTracing1.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="camera.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="CImg.h" />
-    <ClInclude Include="ray.h" />
+    <ClInclude Include="Materials.h" />
+    <ClInclude Include="Ray.h" />
+    <ClInclude Include="Shapes.h" />
     <ClInclude Include="utils.h" />
-    <ClInclude Include="vec3.h" />
+    <ClInclude Include="Vec3.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

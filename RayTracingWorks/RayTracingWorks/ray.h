@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __RAY_H__
+#define __RAY_H__
 
 //==================================================================================================
 // Written in 2016 by Peter Shirley <ptrshrl@gmail.com>
@@ -11,18 +12,20 @@
 // with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 //==================================================================================================
 
-#include "vec3.h"
+#include "utils.h"
 
 
-class ray
+class Ray
 {
 public:
-	ray() {}
-	ray(const vec3& a, const vec3& b) { A = a; B = b; }
-	vec3 origin() const { return A; }
-	vec3 direction() const { return B; }
-	vec3 point_at_parameter(float t) const { return A + t * B; }
+	Ray() {}
+	Ray(const Vec3& a, const Vec3& b) { A = a; B = b; }
+	Vec3 origin() const { return A; }
+	Vec3 direction() const { return B; }
+	Vec3 point_at_parameter(float t) const { return A + t * B; }
 
-	vec3 A;
-	vec3 B;
+	Vec3 A;
+	Vec3 B;
 };
+
+#endif

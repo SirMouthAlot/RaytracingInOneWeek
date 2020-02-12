@@ -4,26 +4,36 @@
 #include <iostream>
 #include <float.h>
 
-#include "CImg.h"
-#include "vec3.h"
+#include "Camera.h"
+#include "Shapes.h"
 #include "utils.h"
-#include "ray.h"
-#include "camera.h"
+
+#include "CImg.h"
 
 using namespace std;
 using namespace cimg_library;
 
-vec3 color(const ray& r, hittable* world) {
-	hit_record rec;
-	if (world->hit(r, 0.0, FLT_MAX, rec)) {
-		vec3 target = rec.p + rec.normal + random_in_unit_sphere();
-		return 0.5f * color(ray(rec.p, target - rec.p), world);
+int max_depth = 10;
+int max_samples = 32;
+
+Vec3 color(const Ray& r, Shape* world, int depth=0) {
+	Hit_Record rec;
+	if (world->hit(r, 0.001, FLT_MAX, rec)) {
+		Ray scattered;
+		Vec3 attentuation;
+		if (depth < max_depth && rec.mat_ptr->scatter(r, rec, attentuation, scattered))
+		{
+			return attentuation * color(scattered, world, depth + 1);
+		} else {
+			return Vec3(0.f, 0.f, 0.f);
+		}
 	} else {
-		vec3 unit_direction = unit_vector(r.direction());
+		Vec3 unit_direction = unit_vector(r.direction());
 		float t = 0.5f * (unit_direction.y() + 1.0f);
-		return (1.0f - t) * vec3(1.0f, 1.0f, 1.0f) + t * vec3(0.5f, 0.7f, 1.0f);
+		return (1.0f - t) * Vec3(1.0f, 1.0f, 1.0f) + t * Vec3(0.5f, 0.7f, 1.0f);
 	}
 }
+
 int main()
 {
 	int nx, ny, countRows;
@@ -33,31 +43,32 @@ int main()
 	CImg<unsigned char> img(nx, ny, 1, 3);
 	CImgDisplay canvas(img, "RayTracing Test", 0);
 	
-	vec3 lower_left_corner(-2.0f, -1.0f, -1.0f);
-	vec3 horizontal(4.0f, 0.0f, 0.0f);
-	vec3 vertical(0.0f, 2.0f, 0.0f);
-	vec3 origin(0.0f, 0.0f, 0.0f);
+	Vec3 lower_left_corner(-2.0f, -1.0f, -1.0f);
+	Vec3 horizontal(4.0f, 0.0f, 0.0f);
+	Vec3 vertical(0.0f, 2.0f, 0.0f);
+	Vec3 origin(0.0f, 0.0f, 0.0f);
 
-	hittable* list[2];
-	list[0] = new sphere(vec3(0, 0, -1), 0.5f);
-	list[1] = new sphere(vec3(0, -100.5, -1), 100);
-	hittable* world = new hittable_list(list, 2);
+	Shape* list[2];
+	list[0] = new Sphere(Vec3(0, 0, -1), 0.5f, new Lambertian(Vec3(0.8f, 0.3f, 0.3f)));
+	list[1] = new Sphere(Vec3(0, -100.5, -1), 100, new Lambertian(Vec3(0.8f, 0.8f, 0.f)));
+	//list[2] = new Sphere(Vec3(1, 0, -1), 100, new Metal(Vec3(0.8f, 0.8f, 0.f), 0.f));
+	//list[3] = new Sphere(Vec3(-1, 0, -1), 100, new Metal(Vec3(0.8f, 0.8f, 0.f), 0.f));
+	Shape* world = new Shape_List(list, 2);
 
-	camera cam;
+	Camera cam;
 
 	countRows = 0;
-	int numSamples = 64;
 	for (int j = ny - 1; j >= 0; j--, countRows++) {
 		for (int i = 0; i < nx; i++) {
-			vec3 col(0, 0, 0);
-			for (int sample = 0; sample < numSamples; sample++)
+			Vec3 col(0, 0, 0);
+			for (int sample = 0; sample < max_samples; sample++)
 			{
 				float u = float(i + random_double()) / float(nx);
 				float v = float(j + random_double()) / float(ny);
-				ray r = cam.get_ray(u, v);
+				Ray r = cam.get_ray(u, v);
 				col += color(r, world);
 			}
-			col /= float(numSamples);
+			col /= float(max_samples);
 
 			int ir = int(255.99f * col[0]);
 			int ig = int(255.99f * col[1]);
