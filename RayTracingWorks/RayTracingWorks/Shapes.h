@@ -61,6 +61,14 @@ class Shape_List : public Shape {
 public:
 	Shape_List() {}
 	Shape_List(Shape** l, int n) { list = l; list_size = n; }
+	~Shape_List()
+	{
+		if (list != nullptr)
+		{
+			delete list;
+			list = nullptr;
+		}
+	}
 
 	virtual bool hit(const Ray& r, float t_min, float t_max, Hit_Record& rec) const {
 		Hit_Record temp_rec;
@@ -76,7 +84,7 @@ public:
 		return hit_anything;
 	}
 
-	Shape** list;
+	Shape** list = nullptr;
 	int list_size;
 };
 
